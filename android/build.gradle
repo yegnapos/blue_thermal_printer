@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.4'
+        classpath 'com.android.tools.build:gradle:8.1.0'
     }
 }
 
@@ -23,13 +23,13 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'id.kakzaki.blue_thermal_printer'
-    compileSdkVersion 31
+    compileSdkVersion 34
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
-        minSdkVersion 18
+        minSdkVersion 22
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
@@ -37,8 +37,7 @@ android {
     }
 }
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'com.google.zxing:core:3.3.3'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.zxing:core:3.1.0'
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'com.journeyapps:zxing-android-embedded:3.6.0@aar'
 }

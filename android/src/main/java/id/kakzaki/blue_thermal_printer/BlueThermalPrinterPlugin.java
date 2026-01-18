@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -50,9 +51,12 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.journeyapps.barcodescanner.BarcodeEncoder;
+
+
 
 public class BlueThermalPrinterPlugin implements FlutterPlugin, ActivityAware,MethodCallHandler, RequestPermissionsResultListener {
 
@@ -920,9 +924,27 @@ public class BlueThermalPrinterPlugin implements FlutterPlugin, ActivityAware,Me
           THREAD.write(PrinterCommands.ESC_ALIGN_RIGHT);
           break;
       }
-      BitMatrix bitMatrix = multiFormatWriter.encode(textToQR, BarcodeFormat.QR_CODE, width, height);
-      BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-      Bitmap bmp = barcodeEncoder.createBitmap(bitMatrix);
+      // BitMatrix bitMatrix = multiFormatWriter.encode(textToQR, BarcodeFormat.QR_CODE, width, height);
+      // BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+      // Bitmap bmp = barcodeEncoder.createBitmap(bitMatrix);
+
+      Hashtable<EncodeHintType, String> mHashtable = new Hashtable<>();
+        mHashtable.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+
+        BitMatrix matrix = new MultiFormatWriter().encode(textToQR, BarcodeFormat.QR_CODE, width, height, mHashtable);
+        int matrixWidth = matrix.getWidth();
+        int matrixHeight = matrix.getHeight();
+        int[] pixels = new int[matrixWidth * matrixHeight];
+
+        for (int y = 0; y < matrixHeight; y++) {
+            for (int x = 0; x < matrixWidth; x++) {
+                pixels[y * matrixWidth + x] = matrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF;
+            }
+        }
+
+        Bitmap bmp = Bitmap.createBitmap(matrixWidth, matrixHeight, Bitmap.Config.ARGB_8888);
+        bmp.setPixels(pixels, 0, matrixWidth, 0, 0, width, matrixHeight);
+
       if (bmp != null) {
         byte[] command = Utils.decodeBitmap(bmp);
         THREAD.write(command);
