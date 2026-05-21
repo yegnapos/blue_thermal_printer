@@ -21,7 +21,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.Log;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -31,6 +30,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ public class BlueThermalPrinterPlugin implements FlutterPlugin, ActivityAware,Me
   private static final String NAMESPACE = "blue_thermal_printer";
   private static final int REQUEST_COARSE_LOCATION_PERMISSIONS = 1451;
   private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+  private static final ExecutorService BACKGROUND_EXECUTOR = Executors.newCachedThreadPool();
   private static ConnectedThread THREAD = null;
   private BluetoothAdapter mBluetoothAdapter;
 
@@ -469,7 +471,7 @@ public class BlueThermalPrinterPlugin implements FlutterPlugin, ActivityAware,Me
    */
   private void isDeviceConnected(Result result, String address) {
 
-    AsyncTask.execute(() -> {
+    BACKGROUND_EXECUTOR.execute(() -> {
       try {
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 
@@ -508,7 +510,7 @@ public class BlueThermalPrinterPlugin implements FlutterPlugin, ActivityAware,Me
       result.error("connect_error", "already connected", null);
       return;
     }
-    AsyncTask.execute(() -> {
+    BACKGROUND_EXECUTOR.execute(() -> {
       try {
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 
@@ -552,7 +554,7 @@ public class BlueThermalPrinterPlugin implements FlutterPlugin, ActivityAware,Me
       result.error("disconnection_error", "not connected", null);
       return;
     }
-    AsyncTask.execute(() -> {
+    BACKGROUND_EXECUTOR.execute(() -> {
       try {
         THREAD.cancel();
         THREAD = null;
@@ -1020,13 +1022,13 @@ public class BlueThermalPrinterPlugin implements FlutterPlugin, ActivityAware,Me
     @Override
     public void onListen(Object o, EventSink eventSink) {
       statusSink = eventSink;
-      context.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+      ContextCompat.registerReceiver(context, mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED);
 
-      context.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
+      ContextCompat.registerReceiver(context, mReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED), ContextCompat.RECEIVER_NOT_EXPORTED);
 
-      context.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED));
+      ContextCompat.registerReceiver(context, mReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED), ContextCompat.RECEIVER_NOT_EXPORTED);
 
-      context.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+      ContextCompat.registerReceiver(context, mReceiver, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED), ContextCompat.RECEIVER_NOT_EXPORTED);
 
     }
 
